@@ -1,0 +1,28 @@
+name: Oomnitza-Insight Data Sync
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # Runs every day at 05:00 UTC
+  workflow_dispatch:
+
+jobs:
+  sync-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run Oomnitza-Insight Sync
+        env:
+          OOMNITZA_URL: ${{ secrets.OOMNITZA_URL }}
+          OOMNITZA_API_TOKEN: ${{ secrets.OOMNITZA_API_TOKEN }}
+          INSIGHT_URL: ${{ secrets.INSIGHT_URL }}
+          INSIGHT_API_KEY: ${{ secrets.INSIGHT_API_KEY }}
+          INSIGHT_API_SECRET: ${{ secrets.INSIGHT_API_SECRET }}
+        run: python src/connector.py
