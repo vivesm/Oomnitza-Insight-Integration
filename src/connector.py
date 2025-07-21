@@ -21,12 +21,20 @@ try:
 except ImportError:
     logging.info("python-dotenv not installed; skipping .env loading.")
 
-OOMNITZA_URL = os.environ.get("OOMNITZA_URL")
-OOMNITZA_API_TOKEN = os.environ.get("OOMNITZA_API_TOKEN")
-INSIGHT_CLIENT_ID = os.environ.get("INSIGHT_CLIENT_ID")
-INSIGHT_CLIENT_KEY = os.environ.get("INSIGHT_CLIENT_KEY")
-INSIGHT_CLIENT_SECRET = os.environ.get("INSIGHT_CLIENT_SECRET")
-INSIGHT_URL = os.environ.get("INSIGHT_URL")
+def get_env_str(var_name):
+    value = os.environ.get(var_name)
+    if isinstance(value, bytes):
+        value = value.decode()
+    elif value is not None and not isinstance(value, str):
+        value = str(value)
+    return value
+
+OOMNITZA_URL = get_env_str("OOMNITZA_URL")
+OOMNITZA_API_TOKEN = get_env_str("OOMNITZA_API_TOKEN")
+INSIGHT_CLIENT_ID = get_env_str("INSIGHT_CLIENT_ID")
+INSIGHT_CLIENT_KEY = get_env_str("INSIGHT_CLIENT_KEY")
+INSIGHT_CLIENT_SECRET = get_env_str("INSIGHT_CLIENT_SECRET")
+INSIGHT_URL = get_env_str("INSIGHT_URL")
 
 REQUIRED_VARS = {
    "OOMNITZA_URL": OOMNITZA_URL,
