@@ -189,8 +189,13 @@ def push_to_oomnitza(asset):
         logging.error(f"Oomnitza API error for {serial}: {e}")
         return False
 
+def test_env_var_types():
+    print("TEST: INSIGHT_CLIENT_KEY type:", type(INSIGHT_CLIENT_KEY), "value:", INSIGHT_CLIENT_KEY)
+    print("TEST: INSIGHT_CLIENT_SECRET type:", type(INSIGHT_CLIENT_SECRET), "value:", INSIGHT_CLIENT_SECRET)
+
 if __name__ == "__main__":
     logging.info("Starting Insight to Oomnitza data sync.")
+    test_env_var_types()
     raw_assets = get_insight_assets()
     transformed_assets = []
     for record in raw_assets:
