@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import requests
+import datetime
 
 # --- 1. Configure Logging ---
 logging.basicConfig(
@@ -40,6 +41,12 @@ if missing_vars:
    sys.exit(1)
 
 logging.info("All required credentials loaded successfully.")
+
+# --- Set Insight order creation dates to yesterday ---
+yesterday = (datetime.datetime.utcnow() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+os.environ['INSIGHT_ORDER_CREATION_DATE_FROM'] = yesterday
+os.environ['INSIGHT_ORDER_CREATION_DATE_TO'] = yesterday
+logging.info(f"Set INSIGHT_ORDER_CREATION_DATE_FROM and TO to {yesterday}")
 
 def get_insight_assets():
     """

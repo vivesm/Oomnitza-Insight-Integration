@@ -3,7 +3,7 @@ name: Oomnitza Insight Integration
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * *' # Runs daily at 2am UTC
+    - cron: '0 6 * * *' # Runs daily at 2am Eastern Time (ET is UTC-4 in July)
 
 jobs:
   sync:
