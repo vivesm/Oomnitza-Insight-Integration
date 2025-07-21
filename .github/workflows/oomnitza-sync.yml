@@ -15,6 +15,7 @@ jobs:
       INSIGHT_CLIENT_ID: ${{ secrets.INSIGHT_CLIENT_ID }}
       INSIGHT_CLIENT_KEY: ${{ secrets.INSIGHT_CLIENT_KEY }}
       INSIGHT_CLIENT_SECRET: ${{ secrets.INSIGHT_CLIENT_SECRET }}
+      INSIGHT_URL: ${{ secrets.INSIGHT_URL }}
       # Add other secrets as needed
     steps:
       - name: Checkout code
