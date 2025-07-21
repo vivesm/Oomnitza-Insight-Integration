@@ -23,16 +23,16 @@ except ImportError:
 
 OOMNITZA_URL = os.environ.get("OOMNITZA_URL")
 OOMNITZA_API_TOKEN = os.environ.get("OOMNITZA_API_TOKEN")
-INSIGHT_URL = os.environ.get("INSIGHT_URL")
-INSIGHT_API_KEY = os.environ.get("INSIGHT_API_KEY")
-INSIGHT_API_SECRET = os.environ.get("INSIGHT_API_SECRET")
+INSIGHT_CLIENT_ID = os.environ.get("INSIGHT_CLIENT_ID")
+INSIGHT_CLIENT_KEY = os.environ.get("INSIGHT_CLIENT_KEY")
+INSIGHT_CLIENT_SECRET = os.environ.get("INSIGHT_CLIENT_SECRET")
 
 REQUIRED_VARS = {
    "OOMNITZA_URL": OOMNITZA_URL,
    "OOMNITZA_API_TOKEN": OOMNITZA_API_TOKEN,
-   "INSIGHT_URL": INSIGHT_URL,
-   "INSIGHT_API_KEY": INSIGHT_API_KEY,
-   "INSIGHT_API_SECRET": INSIGHT_API_SECRET,
+   "INSIGHT_CLIENT_ID": INSIGHT_CLIENT_ID,
+   "INSIGHT_CLIENT_KEY": INSIGHT_CLIENT_KEY,
+   "INSIGHT_CLIENT_SECRET": INSIGHT_CLIENT_SECRET,
 }
 
 missing_vars = [k for k, v in REQUIRED_VARS.items() if not v]
@@ -56,7 +56,7 @@ def get_insight_assets():
     """
     logging.info("Starting fetch from Insight API.")
     headers = {
-        'Authorization': f'Bearer {INSIGHT_API_KEY}:{INSIGHT_API_SECRET}',
+        'Authorization': f'Bearer {INSIGHT_CLIENT_KEY}:{INSIGHT_CLIENT_SECRET}',
         'Accept': 'application/json',
     }
     assets = []
