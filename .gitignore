@@ -1,0 +1,15 @@
+.env
+.idea/
+.venv/
+.vscode/
+venv
+*.log*
+*.pem
+*.py[cod]
+*.sqlite
+config.ini*
+.env.*
+htmlcov
+save_data/*
+src/*
+!docker/config.ini.envsubst
