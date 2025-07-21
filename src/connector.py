@@ -3,6 +3,7 @@ import sys
 import logging
 import requests
 import datetime
+import base64
 
 # --- 1. Configure Logging ---
 logging.basicConfig(
@@ -65,13 +66,18 @@ def get_insight_assets():
     Returns a list of asset records (raw JSON from Insight).
     """
     logging.info("Starting fetch from Insight API.")
+    
+    # Use Basic Authentication with Base64 encoded credentials
+    credentials = f"{INSIGHT_CLIENT_KEY}:{INSIGHT_CLIENT_SECRET}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+    
     headers = {
-        'Authorization': f'Bearer {str(INSIGHT_CLIENT_KEY)}:{str(INSIGHT_CLIENT_SECRET)}',
+        'Authorization': f'Basic {encoded_credentials}',
         'Accept': 'application/json',
     }
     # Debug: log header types and values
     for k, v in headers.items():
-        logging.info(f"Header {k}: type={type(v)}, value={v}")
+        logging.info(f"Header {k}: type={type(v)}, value={'***' if k == 'Authorization' else v}")
     assets = []
     page = 1
     per_page = 100
