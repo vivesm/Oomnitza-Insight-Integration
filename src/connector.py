@@ -58,9 +58,12 @@ def get_insight_assets():
     """
     logging.info("Starting fetch from Insight API.")
     headers = {
-        'Authorization': f'Bearer {INSIGHT_CLIENT_KEY}:{INSIGHT_CLIENT_SECRET}',
+        'Authorization': f'Bearer {str(INSIGHT_CLIENT_KEY)}:{str(INSIGHT_CLIENT_SECRET)}',
         'Accept': 'application/json',
     }
+    # Debug: log header types and values
+    for k, v in headers.items():
+        logging.info(f"Header {k}: type={type(v)}, value={v}")
     assets = []
     page = 1
     per_page = 100
