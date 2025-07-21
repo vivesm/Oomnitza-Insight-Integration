@@ -1,6 +1,7 @@
 name: Oomnitza Insight Integration
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *' # Runs daily at 2am Eastern Time (ET is UTC-4 in July)
