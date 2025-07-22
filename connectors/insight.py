@@ -1,6 +1,6 @@
+import os
 import base64
 import logging
-
 import arrow
 from lib.connector import AssetsConnector
 from utils.helper_utils import response_to_object
@@ -33,9 +33,24 @@ class Connector(AssetsConnector):
         self.client_secret = self.settings.get('client_secret', '')
 
         self.client_id = self.settings.get('client_id', '')
-        self.order_date_from = self.settings.get('order_creation_date_from', '')
-        self.order_date_to = self.settings.get('order_creation_date_to', arrow.now().format('YYYY-MM-DD'))
         self.tracking_data = self.settings.get('tracking_data', '')
+
+        # --- Date logic ---
+        # 1. Try config.ini value
+        order_date_from = self.settings.get('order_creation_date_from', '')
+        order_date_to = self.settings.get('order_creation_date_to', '')
+        # 2. If blank, try environment variable
+        if not order_date_from:
+            order_date_from = os.environ.get('INSIGHT_ORDER_CREATION_DATE_FROM', '')
+        if not order_date_to:
+            order_date_to = os.environ.get('INSIGHT_ORDER_CREATION_DATE_TO', '')
+        # 3. If still blank, use yesterday
+        if not order_date_from:
+            order_date_from = arrow.utcnow().shift(days=-1).format('YYYY-MM-DD')
+        if not order_date_to:
+            order_date_to = arrow.utcnow().shift(days=-1).format('YYYY-MM-DD')
+        self.order_date_from = order_date_from
+        self.order_date_to = order_date_to
 
     def get_headers(self):
         if round(arrow.utcnow().float_timestamp) > self.insight_expires_in:
