@@ -88,7 +88,9 @@ def get_insight_assets():
             # Add date filtering here if supported, e.g. 'updated_since': ...
         }
         try:
-            response = requests.get(f"{INSIGHT_URL}/api/assets", headers=headers, params=params, timeout=30)
+            # response = requests.get(f"{INSIGHT_URL}/api/assets", headers=headers, params=params, timeout=30)
+            # The above line is deprecated. Now using the full endpoint from INSIGHT_URL as set in config or environment.
+            response = requests.get(INSIGHT_URL, headers=headers, params=params, timeout=30)
         except requests.RequestException as e:
             logging.error(f"Request to Insight API failed: {e}")
             break
