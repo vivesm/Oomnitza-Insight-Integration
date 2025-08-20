@@ -83,7 +83,7 @@ def get_insight_assets():
     per_page = 100
     while True:
         # Build the POST body as required by the Insight API (example structure, adjust as needed)
-        body_data = {
+        payload = {
             "MT_Status2Request": {
                 "StatusRequest": [
                     {
@@ -96,9 +96,13 @@ def get_insight_assets():
             }
         }
         try:
-            # response = requests.get(INSIGHT_URL, headers=headers, params=params, timeout=30)
-            # The above line is deprecated. Now using POST with JSON body as required by Insight API.
-            response = requests.post(INSIGHT_URL, headers=headers, json=body_data, timeout=30)
+            # Changed from GET to POST, and from params= to json=
+            response = requests.post(
+                url=INSIGHT_URL,
+                json=payload,  # 'json=' sends data in the request body, which is correct
+                headers=headers,
+                timeout=30
+            )
         except requests.RequestException as e:
             logging.error(f"Request to Insight API failed: {e}")
             break
