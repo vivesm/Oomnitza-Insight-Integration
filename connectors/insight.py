@@ -20,12 +20,18 @@ class Connector(AssetsConnector):
         'client_secret': {'order': 3, 'example': '******', 'default': ""},
         'order_creation_date_from': {'order': 4, 'example': 'YYYY-MM-DD', 'default': ""},
         'order_creation_date_to': {'order': 5, 'example': 'YYYY-MM-DD', 'default': arrow.now().format('YYYY-MM-DD')},
-        'tracking_data': {'order': 6, 'example': 'X', 'default': ""}
+        'tracking_data': {'order': 6, 'example': 'X', 'default': ""},
+        'insight_url': {'order': 7, 'example': 'https://example.com/GetStatus', 'default': ""}
     }
 
     def __init__(self, section, settings):
         super(Connector, self).__init__(section, settings)
-        self.get_sales_order_status_api = 'https://insight-prod.apigee.net/GetStatus'
+        # self.get_sales_order_status_api = 'https://insight-prod.apigee.net/GetStatus'
+        # The above line is now commented out. The Insight API endpoint is now loaded from config for flexibility.
+        self.get_sales_order_status_api = self.settings.get('insight_url', '')  # <-- Load from config.ini
+        if not self.get_sales_order_status_api:
+            logger.error("Insight API URL (insight_url) is not set in config.ini! Exiting.")
+            raise ValueError("Insight API URL (insight_url) is not set in config.ini!")
 
         self.access_token = ""
         self.insight_expires_in = 0
