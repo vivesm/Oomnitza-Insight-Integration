@@ -200,6 +200,15 @@ def test_env_var_types():
     print("TEST: INSIGHT_CLIENT_SECRET type:", type(INSIGHT_CLIENT_SECRET), "value:", INSIGHT_CLIENT_SECRET)
 
 if __name__ == "__main__":
+    """
+    This script is deprecated. Please use the official Oomnitza connector runner:
+
+        python connector.py upload insight
+
+    and configure your Insight integration in connectors/insight.py.
+
+    All custom logic has been removed. See README.md for setup instructions.
+    """
     logging.info("Starting Insight to Oomnitza data sync.")
     test_env_var_types()
     raw_assets = get_insight_assets()
