@@ -82,15 +82,23 @@ def get_insight_assets():
     page = 1
     per_page = 100
     while True:
-        params = {
-            'page': page,
-            'per_page': per_page,
-            # Add date filtering here if supported, e.g. 'updated_since': ...
+        # Build the POST body as required by the Insight API (example structure, adjust as needed)
+        body_data = {
+            "MT_Status2Request": {
+                "StatusRequest": [
+                    {
+                        "ClientID": INSIGHT_CLIENT_ID,
+                        "TrackingData": os.environ.get('INSIGHT_TRACKING_DATA', ''),
+                        "OrderCreationDateFrom": os.environ.get('INSIGHT_ORDER_CREATION_DATE_FROM', ''),
+                        "OrderCreationDateTo": os.environ.get('INSIGHT_ORDER_CREATION_DATE_TO', '')
+                    }
+                ]
+            }
         }
         try:
-            # response = requests.get(f"{INSIGHT_URL}/api/assets", headers=headers, params=params, timeout=30)
-            # The above line is deprecated. Now using the full endpoint from INSIGHT_URL as set in config or environment.
-            response = requests.get(INSIGHT_URL, headers=headers, params=params, timeout=30)
+            # response = requests.get(INSIGHT_URL, headers=headers, params=params, timeout=30)
+            # The above line is deprecated. Now using POST with JSON body as required by Insight API.
+            response = requests.post(INSIGHT_URL, headers=headers, json=body_data, timeout=30)
         except requests.RequestException as e:
             logging.error(f"Request to Insight API failed: {e}")
             break
@@ -98,12 +106,12 @@ def get_insight_assets():
             logging.error(f"Insight API returned {response.status_code}: {response.text}")
             break
         data = response.json()
+        # Adjust this extraction as needed based on actual Insight API response structure
         page_assets = data.get('assets', [])
         assets.extend(page_assets)
         logging.info(f"Fetched {len(page_assets)} assets from page {page}.")
-        if len(page_assets) < per_page:
-            break  # Last page
-        page += 1
+        # If the API supports pagination, add logic here; otherwise, break after one request
+        break
     logging.info(f"Total assets fetched from Insight: {len(assets)}.")
     return assets
 
