@@ -59,63 +59,90 @@ os.environ['INSIGHT_ORDER_CREATION_DATE_FROM'] = yesterday
 os.environ['INSIGHT_ORDER_CREATION_DATE_TO'] = yesterday
 logging.info(f"Set INSIGHT_ORDER_CREATION_DATE_FROM and TO to {yesterday}")
 
+def get_insight_access_token(client_key, client_secret):
+    """
+    Fetch OAuth access token from Insight API using client_key and client_secret.
+    """
+    token = f"{client_key}:{client_secret}"
+    base64_token = base64.b64encode(token.encode()).decode()
+    token_url = 'https://insight-prod.apigee.net/oauth/client_credential/accesstoken?grant_type=client_credentials'
+    basic_auth_headers = {
+        'Authorization': f'Basic {base64_token}',
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    try:
+        resp = requests.post(token_url, headers=basic_auth_headers, data={})
+        resp.raise_for_status()
+        data = resp.json()
+        return data.get('access_token', None)
+    except Exception as e:
+        logging.error(f"Failed to get Insight access token: {e}")
+        return None
+
 def get_insight_assets():
     """
-    Fetch asset procurement data from the Insight API.
-    Handles authentication, pagination, and error logging.
-    Returns a list of asset records (raw JSON from Insight).
+    Fetch asset procurement data from the Insight API using Bearer token auth and paginated date ranges.
     """
     logging.info("Starting fetch from Insight API.")
-    
-    # Use Basic Authentication with Base64 encoded credentials
-    credentials = f"{INSIGHT_CLIENT_KEY}:{INSIGHT_CLIENT_SECRET}"
-    encoded_credentials = base64.b64encode(credentials.encode()).decode()
-    
+    access_token = get_insight_access_token(INSIGHT_CLIENT_KEY, INSIGHT_CLIENT_SECRET)
+    if not access_token:
+        logging.error("Could not obtain Insight access token. Exiting.")
+        return []
     headers = {
-        'Authorization': f'Basic {encoded_credentials}',
+        'Authorization': f'Bearer {access_token}',
         'Accept': 'application/json',
     }
-    # Debug: log header types and values
-    for k, v in headers.items():
-        logging.info(f"Header {k}: type={type(v)}, value={'***' if k == 'Authorization' else v}")
+    # Date range logic (60-day intervals)
+    from datetime import datetime, timedelta
+    import json
+    date_from = os.environ.get('INSIGHT_ORDER_CREATION_DATE_FROM', '')
+    date_to = os.environ.get('INSIGHT_ORDER_CREATION_DATE_TO', '')
+    if not date_from or not date_to:
+        today = datetime.utcnow().date()
+        date_from = (today - timedelta(days=1)).strftime('%Y-%m-%d')
+        date_to = date_from
+    start = datetime.strptime(date_from, '%Y-%m-%d')
+    end = datetime.strptime(date_to, '%Y-%m-%d')
+    interval = timedelta(days=60)
     assets = []
-    page = 1
-    per_page = 100
-    while True:
-        # Build the POST body as required by the Insight API (example structure, adjust as needed)
+    current = start
+    while current <= end:
+        interval_end = min(current + interval, end)
         payload = {
             "MT_Status2Request": {
                 "StatusRequest": [
                     {
                         "ClientID": INSIGHT_CLIENT_ID,
                         "TrackingData": os.environ.get('INSIGHT_TRACKING_DATA', ''),
-                        "OrderCreationDateFrom": os.environ.get('INSIGHT_ORDER_CREATION_DATE_FROM', ''),
-                        "OrderCreationDateTo": os.environ.get('INSIGHT_ORDER_CREATION_DATE_TO', '')
+                        "OrderCreationDateFrom": current.strftime('%Y-%m-%d'),
+                        "OrderCreationDateTo": interval_end.strftime('%Y-%m-%d')
                     }
                 ]
             }
         }
+        print(f"DEBUG: Request Method = POST")
+        print(f"DEBUG: Request URL = {INSIGHT_URL}")
+        print(f"DEBUG: Request Headers = {json.dumps(headers, indent=2)}")
+        print(f"DEBUG: Request Body (Payload) = {json.dumps(payload, indent=2)}")
         try:
-            # Changed from GET to POST, and from params= to json=
             response = requests.post(
                 url=INSIGHT_URL,
-                json=payload,  # 'json=' sends data in the request body, which is correct
+                json=payload,
                 headers=headers,
                 timeout=30
             )
-        except requests.RequestException as e:
+            if response.status_code != 200:
+                logging.error(f"Insight API returned {response.status_code}: {response.text}")
+                break
+            data = response.json()
+            # You may need to adjust this extraction based on the actual API response
+            page_assets = data.get('assets', [])
+            assets.extend(page_assets)
+            logging.info(f"Fetched {len(page_assets)} assets from {current.strftime('%Y-%m-%d')} to {interval_end.strftime('%Y-%m-%d')}.")
+        except Exception as e:
             logging.error(f"Request to Insight API failed: {e}")
             break
-        if response.status_code != 200:
-            logging.error(f"Insight API returned {response.status_code}: {response.text}")
-            break
-        data = response.json()
-        # Adjust this extraction as needed based on actual Insight API response structure
-        page_assets = data.get('assets', [])
-        assets.extend(page_assets)
-        logging.info(f"Fetched {len(page_assets)} assets from page {page}.")
-        # If the API supports pagination, add logic here; otherwise, break after one request
-        break
+        current = interval_end + timedelta(days=1)
     logging.info(f"Total assets fetched from Insight: {len(assets)}.")
     return assets
 
