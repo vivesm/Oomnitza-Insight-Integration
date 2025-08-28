@@ -1,15 +1,15 @@
 [oomnitza]
 enable = True
-url = https://oscarhealth-dev.oomnitza.com
-api_token = d0b7bfd7f42441439cef4c1f832a75a1
+url = https://yourinstance.oomnitza.com
+api_token = your_oomnitza_api_token_here
 
 [insight]
 enable = True
-client_id = 9668126
-client_key = Vyim102tJZNg2kDhjXSWHa9Ml9OQROU5
-client_secret = D8q6tn30lIgmhZKZ
-order_creation_date_from = 2025-07-18
-order_creation_date_to = 2025-07-21
+client_id = your_insight_client_id
+client_key = your_insight_client_key
+client_secret = your_insight_client_secret
+order_creation_date_from = 
+order_creation_date_to = 
 tracking_data = True
 insight_url = https://insight-prod.apigee.net/GetStatus
 

@@ -26,37 +26,40 @@ class Connector(AssetsConnector):
 
     def __init__(self, section, settings):
         super(Connector, self).__init__(section, settings)
-        # self.get_sales_order_status_api = 'https://insight-prod.apigee.net/GetStatus'
-        # The above line is now commented out. The Insight API endpoint is now loaded from config for flexibility.
-        self.get_sales_order_status_api = self.settings.get('insight_url', '')  # <-- Load from config.ini
+        
+        # Load configuration with environment variable priority (as per PRD requirements)
+        # Priority order: Environment Variables > config.ini > defaults
+        
+        # Insight API URL
+        self.get_sales_order_status_api = os.environ.get('INSIGHT_URL') or self.settings.get('insight_url', '')
         if not self.get_sales_order_status_api:
-            logger.error("Insight API URL (insight_url) is not set in config.ini! Exiting.")
-            raise ValueError("Insight API URL (insight_url) is not set in config.ini!")
+            logger.error("Insight API URL is not set! Please set INSIGHT_URL environment variable or insight_url in config.ini")
+            raise ValueError("Insight API URL is not configured!")
 
         self.access_token = ""
         self.insight_expires_in = 0
-        self.client_key = self.settings.get('client_key', '')
-        self.client_secret = self.settings.get('client_secret', '')
+        
+        # Authentication credentials - prioritize environment variables
+        self.client_key = os.environ.get('INSIGHT_CLIENT_KEY') or self.settings.get('client_key', '')
+        self.client_secret = os.environ.get('INSIGHT_CLIENT_SECRET') or self.settings.get('client_secret', '')
+        self.client_id = os.environ.get('INSIGHT_CLIENT_ID') or self.settings.get('client_id', '')
+        self.tracking_data = os.environ.get('INSIGHT_TRACKING_DATA') or self.settings.get('tracking_data', '')
 
-        self.client_id = self.settings.get('client_id', '')
-        self.tracking_data = self.settings.get('tracking_data', '')
-
-        # --- Date logic ---
-        # 1. Try config.ini value
-        order_date_from = self.settings.get('order_creation_date_from', '')
-        order_date_to = self.settings.get('order_creation_date_to', '')
-        # 2. If blank, try environment variable
-        if not order_date_from:
-            order_date_from = os.environ.get('INSIGHT_ORDER_CREATION_DATE_FROM', '')
-        if not order_date_to:
-            order_date_to = os.environ.get('INSIGHT_ORDER_CREATION_DATE_TO', '')
-        # 3. If still blank, use yesterday
+        # Date logic with environment variable priority
+        # Priority: Environment Variables > config.ini > yesterday (default)
+        order_date_from = os.environ.get('INSIGHT_ORDER_CREATION_DATE_FROM') or self.settings.get('order_creation_date_from', '')
+        order_date_to = os.environ.get('INSIGHT_ORDER_CREATION_DATE_TO') or self.settings.get('order_creation_date_to', '')
+        
+        # If still blank, use yesterday as default
         if not order_date_from:
             order_date_from = arrow.utcnow().shift(days=-1).format('YYYY-MM-DD')
         if not order_date_to:
             order_date_to = arrow.utcnow().shift(days=-1).format('YYYY-MM-DD')
+            
         self.order_date_from = order_date_from
         self.order_date_to = order_date_to
+        
+        logger.info(f"Insight connector initialized with date range: {self.order_date_from} to {self.order_date_to}")
 
     def get_headers(self):
         if round(arrow.utcnow().float_timestamp) > self.insight_expires_in:

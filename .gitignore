@@ -10,6 +10,14 @@ venv/
 .env.*
 .secrets
 
+# Credential files - NEVER COMMIT THESE
+setup_env.sh
+*credentials*
+*secrets*
+*.key
+*.pem
+*.cert
+
 # C extensions
 *.so
 
@@ -83,7 +91,9 @@ poetry.lock
 .vscode/
 
 # Config files with secrets
+config.ini
 config.ini*
+!config.ini.example
 !docker/config.ini.envsubst
 
 # Data files
