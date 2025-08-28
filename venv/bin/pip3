@@ -1,4 +1,4 @@
-#!/Users/mvives/Developer/official_oomnitza-connector/venv/bin/python3.12
+#!/Users/melvin/Developer/GitHub/Oomnitza-Insight-Integration/Oomnitza-Insight-Integration/venv/bin/python3.13
 # -*- coding: utf-8 -*-
 import re
 import sys
