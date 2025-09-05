@@ -1,0 +1,53 @@
+name: Oomnitza Insight Integration
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *' # Runs daily at 2am Eastern Time (ET is UTC-4 in July)
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      OOMNITZA_URL: ${{ secrets.OOMNITZA_URL }}
+      OOMNITZA_API_TOKEN: ${{ secrets.OOMNITZA_API_TOKEN }}
+      OOMNITZA_CONNECTOR_SOURCE: ${{ secrets.OOMNITZA_CONNECTOR_SOURCE }}
+      INSIGHT_CLIENT_ID: ${{ secrets.INSIGHT_CLIENT_ID }}
+      INSIGHT_CLIENT_KEY: ${{ secrets.INSIGHT_CLIENT_KEY }}
+      INSIGHT_CLIENT_SECRET: ${{ secrets.INSIGHT_CLIENT_SECRET }}
+      INSIGHT_URL: ${{ secrets.INSIGHT_URL }}
+      # Add other secrets as needed
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install OpenLDAP development libraries
+        run: sudo apt-get update && sudo apt-get install -y libldap2-dev libsasl2-dev
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      # - name: Run connector
+      #   run: python src/connector.py
+      #   (Original block commented out for dynamic date automation)
+      
+      # --- New block: Run connector with dynamic date range for Insight integration ---
+      - name: Run connector with dynamic Insight date range
+        # This step dynamically sets the date range for INSIGHT_ORDER_CREATION_DATE_FROM and TO
+        # so you never have to update the workflow manually. It sets FROM to yesterday and TO to today (UTC).
+        env:
+          OOMNITZA_URL: ${{ secrets.OOMNITZA_URL }}
+          OOMNITZA_API_TOKEN: ${{ secrets.OOMNITZA_API_TOKEN }}
+          OOMNITZA_CONNECTOR_SOURCE: ${{ secrets.OOMNITZA_CONNECTOR_SOURCE }}
+          INSIGHT_CLIENT_ID: ${{ secrets.INSIGHT_CLIENT_ID }}
+          INSIGHT_CLIENT_KEY: ${{ secrets.INSIGHT_CLIENT_KEY }}
+          INSIGHT_CLIENT_SECRET: ${{ secrets.INSIGHT_CLIENT_SECRET }}
+          INSIGHT_URL: ${{ secrets.INSIGHT_URL }}
+          INSIGHT_ENABLED: "True"
+        run: |
+          # Set date range: FROM = yesterday, TO = today (UTC)
+          export INSIGHT_ORDER_CREATION_DATE_FROM=$(date -u -d 'yesterday' +%Y-%m-%d)
+          export INSIGHT_ORDER_CREATION_DATE_TO=$(date -u +%Y-%m-%d)
+          python src/connector.py
